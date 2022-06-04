@@ -1,7 +1,7 @@
 version: "2"
 
 networks:
-  cc-tools-demo-net:
+  HLResProject-net:
     external: true
 
 services:
@@ -23,8 +23,8 @@ services:
       - CONFIG_SDK_FILE=configsdk-org1.yaml
       - DOCKER=1
       - CHANNEL=mainchannel
-      - CCNAME=cc-tools-demo
+      - CCNAME=HLResProject
     working_dir: /rest-server
     container_name: ccapi.org1.example.com
     networks:
-      - cc-tools-demo-net
+      - HLResProject-net

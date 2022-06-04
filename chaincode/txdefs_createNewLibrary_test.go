@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	cc "github.com/goledgerdev/cc-tools-demo/chaincode"
+	cc "github.com/goledgerdev/HLResProject/chaincode"
 	"github.com/goledgerdev/cc-tools/mock"
 )
 

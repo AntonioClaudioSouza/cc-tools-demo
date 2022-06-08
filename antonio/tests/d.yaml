@@ -1,0 +1,13 @@
+kind: Pod 
+apiVersion: v1 
+metadata:
+  name: demo-pod
+spec:
+  containers:
+    - name: cc-webclient-containers
+      image: docker.io/goledger/cc-webclient
+      ports:
+        - containerPort: 80
+          protocol: TCP
+      #serviceAccount: anyuid-root
+      #serviceAccountName: anyuid-root

@@ -1,0 +1,51 @@
+#
+# Recurso Service, para expor seu  Pod ao mundo
+#
+# Criação do service para acesso EXTERNO ao nosso cluster
+# usando NodePort
+#
+apiVersion: v1                                  
+kind: Service
+metadata:  
+  labels:
+    app: cc-webclient
+  name: service-cc-webclient                    
+spec:
+  allocateLoadBalancerNodePorts: true
+  externalIPs:
+    - 35.175.244.70
+  selector:
+    app: cc-webclient
+  ports:  
+  - name: cc-webclient-port
+    protocol: TCP
+    port: 80  
+    targetPort: 80 
+    nodePort: 32080 
+  type: LoadBalancer
+---
+#
+# Criação do deploy de nossa aplicação
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cc-webclient 
+  labels:
+    app: cc-webclient
+spec:
+  replicas: 1  
+  selector:
+    matchLabels:
+      app: cc-webclient
+  template:
+    metadata:
+      labels:
+        app: cc-webclient
+    spec:
+      containers:
+      - name: cc-webclient
+        image: docker.io/goledger/cc-webclient
+        ports:          
+          - containerPort: 80
+          

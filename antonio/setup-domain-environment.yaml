@@ -1,0 +1,12 @@
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: setup-domain-environment
+data:  
+  HTTPS: "false"
+  LETS_ENCRYPT: "false"
+  DOMAIN: ""
+  USERNAME: "" 
+  PASSWORD: ""
+  USEAUTH: "false"
+

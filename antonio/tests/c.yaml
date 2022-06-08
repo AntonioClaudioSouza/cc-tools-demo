@@ -1,0 +1,24 @@
+#kind: ConfigMap 
+#apiVersion: v1 
+#metadata:
+#  name: setup-domain-environment
+#data:  
+#  HTTPS: "true"
+#  LETS_ENCRYPT: "false"
+#  DOMAIN: "c"
+#  USERNAME: "" 
+#  PASSWORD: ""
+#  USEAUTH: "false"
+---
+kind: Pod 
+apiVersion: v1 
+metadata:
+  name: pod-env-var2 
+spec:
+  containers:
+    - name: env-var-configmap2
+      image: nginx:1.7.9 
+      env:
+        - name: HTTPS
+          value: "true"
+

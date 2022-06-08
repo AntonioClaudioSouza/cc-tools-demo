@@ -269,7 +269,7 @@ EOF
   -f haproxy-ingress-values.yaml
 
   #Mudar seu ip externo
-  kubectl patch svc haproxy-ingress -n ingress-controller -p '{"spec": {"type": "LoadBalancer", "externalIPs":["0.0.0.0"]}}' 
+  kubectl patch svc haproxy-ingress -n ingress-controller -p '{"spec": {"type": "LoadBalancer", "externalIPs":["35.175.244.70"]}}' 
   kubectl --namespace ingress-controller get services haproxy-ingress -o wide
 }
 
@@ -281,7 +281,12 @@ enableNode(){
     echo "done"
 }
 
+enableUserDocker(){
 
+    sudo groupadd docker
+    sudo usermod -aG docker ${USER}
+    sudo usermod -aG docker centos
+}
 #installRequisitos
 #downloadBinaries
 #downloadCheckSum
@@ -294,11 +299,11 @@ enableNode(){
 #installCRICTL
 #installServiceKubelet
 #startCluster
-
+#enableUserDocker
 #kubeadm init
 
 #configEnviromentKubernetes
 #configureModelNetwork
 #enableNode
-##installIngressNginx -> aws check se será necessário
+installIngressNginx #-> aws check se será necessário
 

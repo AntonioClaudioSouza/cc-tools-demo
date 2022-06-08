@@ -10,8 +10,7 @@ metadata:
   labels:
     app: cc-webclient
   name: service-cc-webclient                    
-spec:
-  allocateLoadBalancerNodePorts: true
+spec:  
   externalIPs:
     - 35.175.244.70
   selector:

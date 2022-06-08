@@ -1,5 +1,6 @@
 #!/bin/bash
 
+installRequisitos(){
 yum update -y
 yum install -y wget
 yum -y install net-tools wget telnet yum-utils device-mapper-persistent-data lvm2
@@ -13,11 +14,16 @@ wget https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-14
 rpm -ivh epel-release-7-14.noarch.rpm
 yum install glances -y
 
-#Install helm
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
+source /usr/share/bash-completion/bash_completion
 
+#Install helm
+#by snap
+#https://snapcraft.io/install/helm/centos
+#or
+#curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+#chmod 700 get_helm.sh
+#./get_helm.sh
+}
 pathDestino="./binKubernetes1.23/"
 #mkdir pathDestino
 
@@ -234,6 +240,9 @@ configEnviromentKubernetes(){
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
     export KUBECONFIG=/etc/kubernetes/admin.conf
+
+    echo 'alias k=kubectl' >>~/.bashrc
+    echo 'complete -F __start_kubectl k' >>~/.bashrc
 }
 
 installIngressNginx(){
@@ -272,6 +281,8 @@ enableNode(){
     echo "done"
 }
 
+
+#installRequisitos
 #downloadBinaries
 #downloadCheckSum
 #checkIsValid
@@ -291,5 +302,3 @@ enableNode(){
 #enableNode
 ##installIngressNginx -> aws check se será necessário
 
-#alias k=kubectl
-#complete -F __start_kubectl k

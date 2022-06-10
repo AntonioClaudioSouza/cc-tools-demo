@@ -1,3 +1,4 @@
+#CONFIGURACAO NAO UTLIZADA ATE O MOMENTO
 kind: ConfigMap 
 apiVersion: v1 
 metadata:

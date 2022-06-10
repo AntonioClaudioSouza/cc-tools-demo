@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ccapi.org1.example.com
+  namespace: HLResProject-net
+spec:
+  selector:
+    app: ccapi.org1.example.com
+  type: NodePort 
+  ports:
+  - name: ccapi.org1.example.com
+    protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 32080 
+---    
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  ccapi.org1.example.com
+  namespace: HLResProject-net  
+  labels:
+    app:  ccapi.org1.example.com
+spec:
+  selector:
+    matchLabels:
+      app: ccapi.org1.example.com
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app:  ccapi.org1.example.com
+    spec:
+      containers:
+      - name:  ccapi.org1.example.com
+        image:  node:carbon
+        resources:
+          #requests:
+          #  cpu: 100m
+          #  memory: 100Mi
+          #limits:
+          #  cpu: 100m
+          #  memory: 100Mi        
+        env:
+        - name: CONFIG_SDK_FILE
+          value: configsdk-org1.yaml
+        - name: DOCKER
+          value: 1
+        - name: CHANNEL
+          value: mainchannel
+        - name: CCNAME
+          value: HLResProject
+        ports:
+        - containerPort:  80
+          name:  ccapi.org1.example.com
+        volumeMounts:
+        - name: volume-rest-server
+          mountPath: /rest-server
+        - name: volume-certs-org
+          mountPath: /certs
+      volumes:
+        - name: volume-rest-server
+          hostPath:
+            path: ./
+        - name: volume-certs-org
+          hostPath:
+            path: ../../fabric/crypto-config/rest-certs/org1.example.com
+      restartPolicy: Always

@@ -1,20 +1,23 @@
----
 apiVersion: v1
 kind: Service
-metadata:
+metadata:  
+  labels:
+    app: ccapi-org1-example-com
   name: ccapi-org1-example-com
   namespace: hlpesproject-net
 spec:
+  ports:
+  - nodePort: 32080
+    port: 80
+    protocol: TCP
+    targetPort: 80
   selector:
     app: ccapi-org1-example-com
-  type: NodePort 
-  ports:
-  - name: ccapi-org1-example-com
-    protocol: TCP
-    port: 80
-    targetPort: 80
-    nodePort: 32080 
----    
+  sessionAffinity: ClientIP
+  type: LoadBalancer
+  externalIPs:    #only k8s, if not get automatic external-ip
+  - 0.0.0.0  
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,12 +29,7 @@ spec:
   selector:
     matchLabels:
       app: ccapi-org1-example-com
-  replicas: 1
-  strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
+  replicas: 1  
   template:
     metadata:
       labels:
@@ -40,13 +38,9 @@ spec:
       containers:
       - name:  ccapi-org1-example-com
         image:  node:carbon
-        resources:
-          #requests:
-          #  cpu: 100m
-          #  memory: 100Mi
-          #limits:
-          #  cpu: 100m
-          #  memory: 100Mi        
+        workingDir: /rest-server
+        command: ["/bin/sh","-c"]        
+        args: ["[ ! -d 'node_modules' ] && npm install; npm start; sleep infinity"]               
         env:
         - name: CONFIG_SDK_FILE
           value: configsdk-org1.yaml
@@ -55,10 +49,9 @@ spec:
         - name: CHANNEL
           value: mainchannel
         - name: CCNAME
-          value: HLResProject
+          value: hlpesproject
         ports:
-        - containerPort:  80
-          name:  ccapi-org1
+        - containerPort:  80              
         volumeMounts:
         - name: volume-rest-server
           mountPath: /rest-server
@@ -68,7 +61,9 @@ spec:
         - name: volume-rest-server
           hostPath:
             path: /home/centos/antonio/cc-tools-demo/antonio/rest-server
+            type: DirectoryOrCreate
         - name: volume-certs-org
           hostPath:
             path: /home/centos/antonio/cc-tools-demo/fabric/crypto-config/rest-certs/org1.example.com
+            type: DirectoryOrCreate
       restartPolicy: Always

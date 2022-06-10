@@ -15,8 +15,8 @@ spec:
     app: ccapi-org1-example-com
   sessionAffinity: ClientIP
   type: LoadBalancer
-#  externalIPs:    #only k8s, if not get automatic external-ip
-#  - 0.0.0.0
+ # externalIPs:    #only k8s, if not get automatic external-ip
+ # - 0.0.0.0  
 ---
 apiVersion: apps/v1
 kind: Deployment

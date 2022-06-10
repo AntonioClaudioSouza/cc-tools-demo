@@ -269,7 +269,7 @@ EOF
   -f haproxy-ingress-values.yaml
 
   #Mudar seu ip externo
-  kubectl patch svc haproxy-ingress -n ingress-controller -p '{"spec": {"type": "LoadBalancer", "externalIPs":["35.175.244.70"]}}' 
+  kubectl patch svc haproxy-ingress -n ingress-controller -p '{"spec": {"type": "LoadBalancer", "externalIPs":["0.0.0.0"]}}' 
   kubectl --namespace ingress-controller get services haproxy-ingress -o wide
 }
 

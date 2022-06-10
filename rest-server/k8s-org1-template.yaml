@@ -51,7 +51,7 @@ spec:
         - name: CCNAME
           value: hlpesproject
         ports:
-        - containerPort:  80              
+        - containerPort: 80              
         volumeMounts:
         - name: volume-rest-server
           mountPath: /rest-server
@@ -60,7 +60,7 @@ spec:
       volumes:
         - name: volume-rest-server
           hostPath:
-            path: /home/centos/antonio/cc-tools-demo/antonio/rest-server
+            path: /home/centos/antonio/cc-tools-demo/rest-server
             type: DirectoryOrCreate
         - name: volume-certs-org
           hostPath:

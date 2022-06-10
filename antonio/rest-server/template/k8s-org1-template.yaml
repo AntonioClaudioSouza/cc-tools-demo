@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ccapi.org1.example.com
-  namespace: HLResProject-net
+  name: ccapi-org1-example-com
+  namespace: hlpesproject-net
 spec:
   selector:
-    app: ccapi.org1.example.com
+    app: ccapi-org1-example-com
   type: NodePort 
   ports:
-  - name: ccapi.org1.example.com
+  - name: ccapi-org1-example-com
     protocol: TCP
     port: 80
     targetPort: 80
@@ -18,14 +18,14 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  ccapi.org1.example.com
-  namespace: HLResProject-net  
+  name:  ccapi-org1-example-com
+  namespace: hlpesproject-net  
   labels:
-    app:  ccapi.org1.example.com
+    app:  ccapi-org1-example-com
 spec:
   selector:
     matchLabels:
-      app: ccapi.org1.example.com
+      app: ccapi-org1-example-com
   replicas: 1
   strategy:
     rollingUpdate:
@@ -35,10 +35,10 @@ spec:
   template:
     metadata:
       labels:
-        app:  ccapi.org1.example.com
+        app:  ccapi-org1-example-com
     spec:
       containers:
-      - name:  ccapi.org1.example.com
+      - name:  ccapi-org1-example-com
         image:  node:carbon
         resources:
           #requests:
@@ -51,14 +51,14 @@ spec:
         - name: CONFIG_SDK_FILE
           value: configsdk-org1.yaml
         - name: DOCKER
-          value: 1
+          value: "1"
         - name: CHANNEL
           value: mainchannel
         - name: CCNAME
           value: HLResProject
         ports:
         - containerPort:  80
-          name:  ccapi.org1.example.com
+          name:  ccapi-org1
         volumeMounts:
         - name: volume-rest-server
           mountPath: /rest-server
@@ -67,8 +67,8 @@ spec:
       volumes:
         - name: volume-rest-server
           hostPath:
-            path: ./
+            path: /home/centos/antonio/cc-tools-demo/antonio/rest-server
         - name: volume-certs-org
           hostPath:
-            path: ../../fabric/crypto-config/rest-certs/org1.example.com
+            path: /home/centos/antonio/cc-tools-demo/fabric/crypto-config/rest-certs/org1.example.com
       restartPolicy: Always

@@ -21,5 +21,8 @@ kubeadm join 172.31.89.144:6443 --token eo2h7w.guhh1apxjsna8kdi \
         --discovery-token-ca-cert-hash sha256:fa9c3461f8b9acfd64135c9e3107c51a59c959d5a667753ac4cc76db9b698ffe
 
 ##################################################        
-
 kubectl taint nodes --all node-role.kubernetes.io/master-
+##################################################
+k config set-context --current --namespace=hlpesproject
+##################################
+journalctl -u kubelet -n 100 --no-pager

@@ -2,13 +2,16 @@ kind: Service
 apiVersion: v1
 metadata:
   name: ssh-service
+  namespace: hlpesproject-net
 spec:
   selector:
     app: ssh-service  
   ports:  
     - name: ssh-port  
       port: 22
-      protocol: TCP
+      protocol: TCP      
+      targetPort: 22
+  sessionAffinity: ClientIP
 ---
 kind: Pod
 apiVersion: v1
@@ -19,6 +22,6 @@ spec:
     app: ssh-service  
   containers:
     - name: ssh-service-img
-      image: gotechnies/alpine-ssh
+      image: gotechnies/alpine-ssh       
       ports:
         - containerPort: 22

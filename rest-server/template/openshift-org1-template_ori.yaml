@@ -42,8 +42,6 @@ spec:
         workingDir: /rest-server
         command: ["/bin/sh","-c"]        
         args: ["                               
-                mkdir /rest-server;
-                mkdir /certs;
                 [ ! -d 'node_modules' ] && npm install;\
                 npm start; \
                 sleep infinity"
@@ -59,12 +57,12 @@ spec:
           value: hlpesproject
         ports:
         - containerPort:  80
-#        volumeMounts:
-#        - mountPath: /rest-server
-#          subPath: rest-server
+        volumeMounts:
+        - mountPath: /rest-server
+          subPath: rest-server
 #          name: nfs-rest-server
-#        - mountPath: /certs
-#          subPath: fabric/crypo-config/rest-certs/org1.example.com
+        - mountPath: /certs
+          subPath: fabric/crypo-config/rest-certs/org1.example.com
 #          name: nfs-rest-server
       dnsPolicy: ClusterFirst
       restartPolicy: Always

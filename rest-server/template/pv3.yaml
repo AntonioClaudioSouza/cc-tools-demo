@@ -1,0 +1,32 @@
+apiVersion: v1                                  # Api k8s
+kind: PersistentVolume
+metadata:
+  name: pv-cc-webclient
+spec:
+  capacity:
+   storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+   - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+   path: /nfsshare/cc-tools-demo
+   server: 172.31.10.22   #Endereco do server onde será requerido o volume
+---
+#
+# Recurso de PersistentVolumeClaim
+#
+# Com o PV definido, agora vamos nos 'conectar' a ele criando um PVC
+# Dessa forma faremos um 'bind' no persistentVolume
+#
+apiVersion: v1                                  # Api k8s
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-cc-webclient 
+spec:
+  volumeName: pv-cc-webclient
+  accessModes:
+   - ReadWriteMany
+  resources:
+   requests:
+    storage: 1Gi

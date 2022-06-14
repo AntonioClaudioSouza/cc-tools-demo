@@ -1,0 +1,24 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ssh-service
+spec:
+  selector:
+    app: ssh-service  
+  ports:  
+    - name: ssh-port  
+      port: 22
+      protocol: TCP
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: ssh-service-pod  
+spec:
+  selector:
+    app: ssh-service  
+  containers:
+    - name: ssh-service-img
+      image: gotechnies/alpine-ssh
+      ports:
+        - containerPort: 22

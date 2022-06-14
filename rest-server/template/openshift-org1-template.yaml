@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:  
+  labels:
+    app: ccapi-org1-example-com
+  name: ccapi-org1-example-com
+  namespace: hlpesproject-net
+spec:
+  ports:
+  - nodePort: 32080
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ccapi-org1-example-com
+  sessionAffinity: ClientIP
+  type: LoadBalancer
+ # externalIPs:    #only k8s, if not get automatic external-ip
+ # - 0.0.0.0  
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name:  ccapi-org1-example-com
+  namespace: hlpesproject-net  
+  labels:
+    app:  ccapi-org1-example-com
+spec:
+  selector:   
+      app: ccapi-org1-example-com
+      deploymentconfig: ccapi-org1-example-com
+  replicas: 1  
+  template:
+    metadata:
+      labels:
+        app:  ccapi-org1-example-com
+        deploymentconfig: ccapi-org1-example-com
+    spec:
+      containers:    
+      - name:  ccapi-org1-example-com
+        image:  node:carbon
+        workingDir: /rest-server
+        command: ["/bin/sh","-c"]        
+        args: ["                               
+                [ ! -d 'node_modules' ] && npm install;\
+                npm start; \
+                sleep infinity"
+              ]               
+        env:
+        - name: CONFIG_SDK_FILE
+          value: configsdk-org1.yaml
+        - name: DOCKER
+          value: "1"
+        - name: CHANNEL
+          value: mainchannel
+        - name: CCNAME
+          value: hlpesproject
+        ports:
+        - containerPort:  80
+        volumeMounts:
+        - mountPath: /rest-server
+          subPath: rest-server
+          name: nfs-rest-server
+        - mountPath: /certs
+          subPath: fabric/crypo-config/rest-certs/org1.example.com
+          name: nfs-rest-server
+      volumes:
+        - name: nfs-rest-server
+          persistentVolumeClaim:
+            claimName: pvc-cc-webclient
+      restartPolicy: Always

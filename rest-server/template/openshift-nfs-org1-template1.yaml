@@ -7,10 +7,10 @@ metadata:
   namespace: hlpesproject-net
 spec:
   ports:
-  - nodePort: 32080
-    port: 80
+  - nodePort: 32081
+    port: PORT
     protocol: TCP
-    targetPort: 80
+    targetPort: PORT
   selector:
     app: ccapi-org1-example-com
   sessionAffinity: ClientIP
@@ -41,7 +41,7 @@ spec:
         image:  node:carbon
         workingDir: /rest-server
         command: ["/bin/sh","-c"]        
-        args: ["                               
+        args: ["               
                 [ ! -d 'node_modules' ] && npm install;\
                 npm start; \
                 sleep infinity"
@@ -56,22 +56,21 @@ spec:
         - name: CCNAME
           value: hlpesproject
         ports:
-        - containerPort:  80
+        - containerPort: PORT
         volumeMounts:
-        - mountPath: /rest-server
-          subPath: rest-server
-#          name: nfs-rest-server
-        - mountPath: /certs
-          subPath: fabric/crypo-config/rest-certs/org1.example.com
-#          name: nfs-rest-server
+          - mountPath: /certs
+            subPath: fabric/crypo-config/rest-certs/org1.example.com
+            name: nfs-rest-server
+          - mountPath: /rest-server
+            subPath: rest-server
+            name: nfs-rest-server            
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       serviceAccount: anyuid-root
       serviceAccountName: anyuid-root
-#      volumes:
-#       - name: nfs-rest-server
-#          persistentVolumeClaim:
-#            claimName: pvc-cc-rest-server
-      restartPolicy: Always
+      volumes:        
+        - name: nfs-rest-server
+          persistentVolumeClaim:
+            claimName: pvc-cc-rest-server

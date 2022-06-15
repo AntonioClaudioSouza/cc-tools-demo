@@ -1,0 +1,1 @@
+docker build -t ssh-golegder-service:v1 .

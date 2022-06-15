@@ -37,6 +37,10 @@ spec:
       - name: authorized-keys-pod
         mountPath: /root/.ssh/authorized_keys
         subPath: authorized_keys
+      - name: arqs-rest-server
+        mountPath: /mnt/rest-server     
+      - name: arqs-servico-certs
+        mountPath: /mnt/certs
       ports:
         - containerPort: 22
   volumes:
@@ -44,6 +48,10 @@ spec:
       configMap:
         name: authorized-keys-pods
         defaultMode: 0600
+    - name: arqs-rest-server
+      emptyDir: {}
+    - name: arqs-servico-certs
+      emptyDir: {}
   securityContext: {}
   serviceAccount: anyuid-root
   serviceAccountName: anyuid-root

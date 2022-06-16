@@ -147,6 +147,20 @@ restServerScaleTo(){
 #                           ROUTINES FOR TOOLS
 # ******************************************************************************
 #
+# Help
+#
+function showFunctions(){
+
+    echo "createServerNFs"
+    echo 'createVolumeNFs'
+	echo 'deleteVolumeNFs'
+    echo 'restServerDeploy'
+    echo 'restServerRemoveDeploy'
+    echo 'restServerScaleTo'
+    echo 'preparYamls'        
+}
+
+#
 # Search value in yaml file config of org
 #
 getValueFileConfigOrg(){
@@ -294,8 +308,12 @@ case $1 in
         preparYamls $2
         exit 1
         ;;
+    help)
+        showFunctions
+        exit 1
+        ;;
 	*)
-		echo "ola"
+		showFunctions
         exit 1
 		;;
 esac

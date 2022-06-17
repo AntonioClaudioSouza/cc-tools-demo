@@ -93,6 +93,9 @@ restServerDeploy(){
 
     org=$1
 
+    #
+    # Get file config or for deploy
+    #
     nameFileConfigOrg=$( setNameFileOrgConfig $org )
 
     if [ ! -f "$nameFileConfigOrg" ]
@@ -101,7 +104,37 @@ restServerDeploy(){
        return 1
     fi
 
+
+    #
+    # Get name app the deploy
+    #
+    nameAppLabel=$( getValueFileConfigOrg $org 'metadata_labels_app' )
+    if [ -z "$nameAppLabel" ]
+    then
+        echo 'label aplicação para org nao localizado, operação abortada!'       
+        return 
+    fi
+
+
+    #
+    # Deploy and wait start pods
+    #
     oc create -f $nameFileConfigOrg
+    
+    status='no'
+    while [ ! "$status" = "Running" ]
+    do
+        sleep 3      
+        status=$(oc get pods --selector app=$nameAppLabel --no-headers -o wide | awk '{print $3}')        
+        
+        echo "wait...:"$status
+        
+        if [ "$status" = "Running" ];then
+            isOk="yes"
+            continue
+        fi
+
+    done    
 }
 
 #
@@ -111,6 +144,9 @@ restServerRemoveDeploy(){
 
     org=$1
 
+    #
+    # Get file config or for deploy
+    #
     nameFileConfigOrg=$( setNameFileOrgConfig $org )
 
     if [ ! -f "$nameFileConfigOrg" ]
@@ -119,7 +155,30 @@ restServerRemoveDeploy(){
        return 1
     fi
 
+
+    #
+    # Get name app the deploy
+    #
+    nameAppLabel=$( getValueFileConfigOrg $org 'metadata_labels_app' )
+    if [ -z "$nameAppLabel" ]
+    then
+        echo 'label aplicação para org nao localizado, operação abortada!'       
+        return 
+    fi
+
+
+    #
+    # Remove deploy and wait finnish
+    #
     oc delete -f $nameFileConfigOrg
+
+    status='wait'
+    while [ -n "$status" ]
+    do
+        sleep 3      
+        status=$(oc get pods --selector app=$nameAppLabel --no-headers -o wide | awk '{print $3}')                
+        echo "wait...:"$status                    
+    done  
 }
 
 #
@@ -140,8 +199,16 @@ restServerScaleTo(){
     fi
 
     oc scale deploymentconfig --replicas=$scale $nameAppLabel
-}
 
+    #status='wait'
+    #while [ -n "$status" ]
+    #do
+     #   sleep 1      
+      #  status2=$(oc get pods --selector app=$nameAppLabel --no-headers -o wide | awk '{print $3}')                
+      #  echo "wait...:"$status2                    
+    #done  
+#oc get deploymentconfig --selector app=ccapi-org1-example-com -o wide
+}
 
 # ******************************************************************************
 #                           ROUTINES FOR TOOLS

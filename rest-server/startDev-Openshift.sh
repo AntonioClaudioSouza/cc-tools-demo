@@ -12,9 +12,9 @@ while getopts "g" opt; do
 done
 
 #
-# Setup pod service SSH
-# 
-function createPodServiceSSH(){
+# Remove the pod ssh service 
+#
+function deletePodServiceSSH(){
 
     if [ "$POD_SSH_SERVICE" == false ]
     then
@@ -24,7 +24,21 @@ function createPodServiceSSH(){
 
     oc delete -f tools-for-openshift/pod_service/podssh.yaml
     sleep 1
+}
+
+#
+# Setup pod service SSH
+# 
+function createPodServiceSSH(){
+
+    if [ "$POD_SSH_SERVICE" == false ]
+    then
+        echo 'POD SSH nao habilitado'
+        return 0
+    fi 
     
+    deletePodServiceSSH
+
     oc create -f tools-for-openshift/pod_service/podssh.yaml
     sleep 5
 
@@ -155,7 +169,7 @@ function restServerDeploy(){
 
     if [ ! -f "$nameFileConfigOrg" ]
     then
-       echo $org' não localizada nos arqs de configuração'
+       echo $org' não localizada nos arqs de configuração, tente "preparYamls" antes'
        return 1
     fi
 
@@ -206,7 +220,7 @@ function restServerRemoveDeploy(){
 
     if [ ! -f "$nameFileConfigOrg" ]
     then
-       echo $org' não localizada nos arqs de configuração'
+       echo $org' não localizada nos arqs de configuração, tente "preparYamls" antes'
        return 1
     fi
 
@@ -313,6 +327,7 @@ function restServerSuspendAll(){
 #
 function showFunctions(){
 
+    echo 'deletePodServiceSSH'
     echo 'createPodServiceSSH'
     echo 'createServerNFs'
     echo 'createVolumeNFs'
@@ -434,6 +449,10 @@ function preparYamls(){
 # * ------------------------
 case $1 in
 
+    deletePodServiceSSH)
+        deletePodServiceSSH
+        exit 1
+        ;;
     createPodServiceSSH)
         createPodServiceSSH
         exit 1

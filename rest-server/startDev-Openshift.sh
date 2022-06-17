@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pod-service(){
+function pod-service(){
     oc delete -f tools-for-openshift/pod_service/podssh.yaml
     sleep 1
     oc create -f tools-for-openshift/pod_service/podssh.yaml
@@ -22,7 +22,7 @@ pod-service(){
 # Setup local nfs server
 # Check config ipAddress for nfs server
 #
-createServerNFs(){
+function createServerNFs(){
     cd tools-for-openshift/volume-nfs/
     ./create-server-nfs-local.sh
     cd ../../
@@ -32,11 +32,11 @@ createServerNFs(){
 # The server NFs must be running
 # If not installed, use function createServerNFs
 #
-createVolumeNFs(){
+function createVolumeNFs(){
     oc create -f tools-for-openshift/volume-nfs/pv-pvc-nfs-volume.yaml
 }
 
-deleteVolumeNFs(){
+function deleteVolumeNFs(){
     oc delete -f tools-for-openshift/volume-nfs/pv-pvc-nfs-volume.yaml
 }
 
@@ -47,7 +47,7 @@ deleteVolumeNFs(){
 #
 # Assemble name file of org
 #
-setNameFileOrgConfig(){
+function setNameFileOrgConfig(){
 
     org=$1
 
@@ -64,7 +64,7 @@ setNameFileOrgConfig(){
 #
 # Assemble name file config of template org
 #
-setNameFileOrgTemplate(){
+function setNameFileOrgTemplate(){
 
     org=$1
 
@@ -89,7 +89,7 @@ setNameFileOrgTemplate(){
 #
 # Deploy rest-server by org name
 #
-restServerDeploy(){
+function restServerDeploy(){
 
     org=$1
 
@@ -140,7 +140,7 @@ restServerDeploy(){
 #
 # Remove deploy by org name
 #
-restServerRemoveDeploy(){
+function restServerRemoveDeploy(){
 
     org=$1
 
@@ -186,7 +186,7 @@ restServerRemoveDeploy(){
 # by org name and number of replicas
 # sample: org1 2
 #
-restServerScaleTo(){   
+function restServerScaleTo(){   
 
     org=$1
     scale=$2
@@ -203,8 +203,7 @@ restServerScaleTo(){
     status='wait'
     isOk=0
     while [ "$isOk" = 0 ]
-    do
-        sleep 2      
+    do        
         status=$(oc get pods --selector app=$nameAppLabel --no-headers -o wide | awk '{print $3}')
         #echo "wait...:"$status
         
@@ -234,8 +233,21 @@ restServerScaleTo(){
             fi
         fi 
         
-        echo "Status: Running "$isRunning" Terminating "$isTerminating" Total "$countArray
+        echo "Status: Running "$isRunning" Terminating "$isTerminating #" Total "$countArray
+        sleep 3
     done      
+}
+
+#
+# Suspend All rest-server
+# by org name
+# sample: org1
+#
+function restServerSuspendAll(){
+
+    #Scale to 0 replicas
+    org=$1
+    restServerScaleTo $org 0
 }
 
 # ******************************************************************************
@@ -252,13 +264,14 @@ function showFunctions(){
     echo 'restServerDeploy'
     echo 'restServerRemoveDeploy'
     echo 'restServerScaleTo'
-    echo 'preparYamls'        
+    echo 'preparYamls'  
+    echo 'restServerSuspendAll'      
 }
 
 #
 # Search value in yaml file config of org
 #
-getValueFileConfigOrg(){
+function getValueFileConfigOrg(){
 
     org=$1
     searchBy=$2
@@ -316,7 +329,7 @@ function parse_yaml() {
 #
 # Parse and prepar file config template by org
 #
-preparYamls(){
+function preparYamls(){
     
     org=$1
     nameFileTemplateOrgNewConfigOutput=$( setNameFileOrgConfig $org )
@@ -399,6 +412,10 @@ case $1 in
         exit 1
 		;;
 
+    restServerSuspendAll)
+		restServerSuspendAll $2
+        exit 1
+		;;
     preparYamls)
         preparYamls $2
         exit 1

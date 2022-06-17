@@ -200,14 +200,42 @@ restServerScaleTo(){
 
     oc scale deploymentconfig --replicas=$scale $nameAppLabel
 
-    #status='wait'
-    #while [ -n "$status" ]
-    #do
-     #   sleep 1      
-      #  status2=$(oc get pods --selector app=$nameAppLabel --no-headers -o wide | awk '{print $3}')                
-      #  echo "wait...:"$status2                    
-    #done  
-#oc get deploymentconfig --selector app=ccapi-org1-example-com -o wide
+    status='wait'
+    isOk=0
+    while [ "$isOk" = 0 ]
+    do
+        sleep 2      
+        status=$(oc get pods --selector app=$nameAppLabel --no-headers -o wide | awk '{print $3}')
+        #echo "wait...:"$status
+        
+        arrayStatus=($status)
+        countArray="${#arrayStatus[@]}"
+
+        isRunning=0
+        isTerminating=0
+        for statusPod in "${arrayStatus[@]}"
+        do             
+            if [ $statusPod = "Running" ]
+            then
+                ((isRunning++))
+            fi
+
+            if [ $statusPod = "Terminating" ]
+            then
+                ((isTerminating++))
+            fi
+        done
+
+        if [ "$isRunning" = $scale ]
+        then
+            if [ "$isTerminating" = "0" ]
+            then
+                isOk=1
+            fi
+        fi 
+        
+        echo "Status: Running "$isRunning" Terminating "$isTerminating" Total "$countArray
+    done      
 }
 
 # ******************************************************************************

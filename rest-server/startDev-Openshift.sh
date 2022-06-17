@@ -1,13 +1,32 @@
 #!/usr/bin/env bash
 
-function pod-service(){
+# Get env file
+source .env
+
+while getopts "g" opt; do
+    case $opt in
+        g)
+            GENERATE_CERT=true
+            ;;
+    esac
+done
+
+#
+# Setup pod service SSH
+# 
+function createPodServiceSSH(){
+
+    if [ "$POD_SSH_SERVICE" == false ]
+    then
+        echo 'POD SSH nao habilitado'
+        return 0
+    fi 
+
     oc delete -f tools-for-openshift/pod_service/podssh.yaml
     sleep 1
+    
     oc create -f tools-for-openshift/pod_service/podssh.yaml
     sleep 5
-
-    #oc delete -f openshift-org1.yaml
-    #sleep 1
 
     #criar imagem container servico
     oc rsync ./ ssh-service:/mnt/rest-server/ -c ssh-service-img
@@ -23,6 +42,13 @@ function pod-service(){
 # Check config ipAddress for nfs server
 #
 function createServerNFs(){
+
+    if [ "$POD_SSH_SERVICE" == true ]
+    then
+        echo 'POD SSH habilitado, desabilite-o para continuar'
+        return 0
+    fi  
+
     cd tools-for-openshift/volume-nfs/
     ./create-server-nfs-local.sh
     cd ../../
@@ -33,6 +59,13 @@ function createServerNFs(){
 # If not installed, use function createServerNFs
 #
 function createVolumeNFs(){
+    
+    if [ "$POD_SSH_SERVICE" == true ]
+    then
+        echo 'POD SSH habilitado, desabilite-o para continuar'
+        return 0
+    fi     
+
     oc create -f tools-for-openshift/volume-nfs/pv-pvc-nfs-volume.yaml
 }
 
@@ -40,6 +73,13 @@ function createVolumeNFs(){
 # Delete volume NFs
 #
 function deleteVolumeNFs(){
+
+    if [ "$POD_SSH_SERVICE" == true ]
+    then
+        echo 'POD SSH habilitado, desabilite-o para continuar'
+        return 0
+    fi  
+
     oc delete -f tools-for-openshift/volume-nfs/pv-pvc-nfs-volume.yaml
 }
 
@@ -60,7 +100,14 @@ function setNameFileOrgConfig(){
         return 
     fi
 
-    local nameFileOrgConfig='openshift-nfs-'$org'.yaml'
+    if [ "$POD_SSH_SERVICE" == true ]
+    then
+        tmp='openshift-ssh-'$org'.yaml'  
+    else
+        tmp='openshift-nfs-'$org'.yaml'
+    fi 
+
+    local nameFileOrgConfig=$tmp
     echo $nameFileOrgConfig
 }
 
@@ -77,8 +124,13 @@ function setNameFileOrgTemplate(){
         return 
     fi
 
-    tmpNameArqTemplate='template/openshift-nfs-'$org'-template1.yaml'
-
+    if [ "$POD_SSH_SERVICE" == true ]
+    then
+        tmpNameArqTemplate='template/openshift-ssh-'$org'-template1.yaml'
+    else
+        tmpNameArqTemplate='template/openshift-nfs-'$org'-template1.yaml'
+    fi    
+    
     if [ ! -f "$tmpNameArqTemplate" ]
     then
        echo $org' não localizada nos arqs de templates'
@@ -261,7 +313,8 @@ function restServerSuspendAll(){
 #
 function showFunctions(){
 
-    echo "createServerNFs"
+    echo 'createPodServiceSSH'
+    echo 'createServerNFs'
     echo 'createVolumeNFs'
 	echo 'deleteVolumeNFs'
     echo 'restServerDeploy'
@@ -348,9 +401,9 @@ function preparYamls(){
 
     if [ "$HTTPS" == true ] 
     then        
-        sed "s/PORT/443/g" $nameFileTemplateOrg > $nameFileTemplateOrgNewConfigOutput
+        sed "s/PORT#/443/g" $nameFileTemplateOrg > $nameFileTemplateOrgNewConfigOutput
     else        
-        sed "s/PORT/80/g" $nameFileTemplateOrg > $nameFileTemplateOrgNewConfigOutput
+        sed "s/PORT#/80/g" $nameFileTemplateOrg > $nameFileTemplateOrgNewConfigOutput
     fi
 
     # Generate certs for rest-server
@@ -374,22 +427,17 @@ function preparYamls(){
 }
 
 
-# Get env file
-source .env
-
-while getopts "g" opt; do
-    case $opt in
-        g)
-            GENERATE_CERT=true
-            ;;
-    esac
-done
 
 
 # * ------------------------
 # * Script starts here.
 # * ------------------------
 case $1 in
+
+    createPodServiceSSH)
+        createPodServiceSSH
+        exit 1
+        ;;
 	createServerNFs)
 		createServerNFs
         exit 1

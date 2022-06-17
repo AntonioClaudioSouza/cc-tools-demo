@@ -8,9 +8,9 @@ metadata:
 spec:
   ports:
   - nodePort: 32081
-    port: PORT
+    port: PORT#
     protocol: TCP
-    targetPort: PORT
+    targetPort: PORT#
   selector:
     app: ccapi-org1-example-com
   sessionAffinity: ClientIP
@@ -56,7 +56,7 @@ spec:
         - name: CCNAME
           value: hlpesproject
         ports:
-        - containerPort: PORT
+        - containerPort: PORT#
         volumeMounts:
           - mountPath: /certs
             subPath: fabric/crypo-config/rest-certs/org1.example.com

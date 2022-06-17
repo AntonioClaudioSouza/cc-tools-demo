@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: podssh-id-rsa
+  namespace: hlpesproject-net 
+data:
+  id_rsa: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpAIBAAKCAQEAw9LcVGQWiUlCdqs5bNTtTsksNvySK7v8lKwq0YQR/gvwGJMM
+    VzLZ2ypu9hNEIuofgo6oouwm2sP02xh5k4HtFs16j8AoEHBZPhOrfjdRdVWN3q1M
+    Gu+5/YMYMbCNpf0pPfBGUhx178yl8Eqb4XxVg0vG9RiNtalPgcQ+mjbCoGjYDQGU
+    YgKYFqYHKG/iytXUI2SSIuH74h4T8dbZymjbx9jEfnqfNkW3r2AzBrtCo+Yn3bQm
+    OXamciz9p040i5O4MWdo5Nd4DAhrokNBYt4Lftowj24AcV/bH+Lzozbq+GI0HjK2
+    CDNKDbpZW+VhvaF6cvc6ySp/qnr7dqkY4GtwqwIDAQABAoIBAHQDucs5nOxq/bhm
+    itgCcjGKF+rfyg2lCuhd8+Q69ZnoIq+8dsQ2eUFSK3kYQvbYdCCaOiiD9iUHkUo4
+    fta4U+l9hQ4jTtkmZojTiHd3eIgmTq3NR9hxjGQ4RZ4ytkjP6p4qes7s06ZlPS5W
+    VXHKgrMNsurESDiG/Xao+FnO9ZGoYPUtOdncT2CfghD6zBe28vYcKS3cenHG/hpF
+    /GxPeXHiAtEGk2YlD+StEe2ZfeM7nm9e6xVkIjagsHxIDbO/NbXA8FXRnV9qDzcZ
+    crJIIdm2NAJAlBy3GrmpllK/iSwCGecP4E8bat+QRoUDPjPgaFoe6MNP361YE4AU
+    oIVbFAkCgYEA+XpLQoMLVNTv4DBBOvtOaIisQ0H/15f3vZl3US3iOJoMidMlI6v3
+    v89dZGFoRed6bRQToFlrT/wvpNx+D996aeGqzIhTntpwmRQ2RonDLv40lzDcrZaY
+    sjH53EQqix2xWeeVgzgx2ZcupvOQCrckOHMr+3myM6AUygjE/PbcBrUCgYEAyPF4
+    eVhDPi/UxGb6UShQlDgRxykpdBL3lap+JghEvr5LbGjFfoQEn6NRxZNVsaO7YtbH
+    SEIecqfXtGTS1Vy3Kt9ZTRkE7Nd6mLrrsP9rhgTB6axkRoXp3Udd9WFewJTrDx+3
+    gOXOFyZRG5vw6ksrDpgNbO9ZDRy8pxfY1JeZ1d8CgYEAtnvwBQzaAwlnFTP24u/k
+    IK6oYuIqBEeS3csd7fGEIib8uOwLpJYruNAz3jMqFMgHUzZ2TLpbtrwfFZZ7V5z+
+    a+i4CLhHglECP9b7BInMjdlAGr+RDCC2PNI1lBsAi5YCnmK5iKxYOnNNmq1aVZw1
+    EF2edGpGIWEdE9NqVCc2NmkCgYEAqoV4BgmnrpsqhK0a2UpL7ywRsiA1JGKAJksz
+    mBTGOdQE72+NwUpJHiubVf4s532ZpEu9e41Yh1X10AkLfbKbYc992dZUfqRxTjC5
+    mE94sJdS83iu88XqazSIAJbrsKPvQbtZnxHlLXH/vF0+OaUmWdEg+4O131G2qlmr
+    UOWBz6MCgYBu2LzXMTXHkNmCpQvxEZoSi6K2N7zSQdU/wHPQoVIxTzYrRSNtP6iS
+    J4vGri8R8tXxHpWeVGWzikMwWdBiqTQ6H+0np0px1zlYoJ+0v1RYOLa08JPn5yK+
+    H+1HbcyUGRiNmBi/QB96hFqnSHPGHfNm8NSZWo/BudgXpzAMA4xDMg==
+    -----END RSA PRIVATE KEY-----
+---
+apiVersion: v1
+kind: Service
+metadata:  
+  labels:
+    app: ccapi-org1-example-com
+  name: ccapi-org1-example-com
+  namespace: hlpesproject-net
+spec:
+  ports:
+  - nodePort: 32081
+    port: PORT#
+    protocol: TCP
+    targetPort: PORT#
+  selector:
+    app: ccapi-org1-example-com
+  sessionAffinity: ClientIP
+  type: LoadBalancer
+ # externalIPs:    #only k8s, if not get automatic external-ip
+ # - 0.0.0.0  
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name:  ccapi-org1-example-com
+  namespace: hlpesproject-net  
+  labels:
+    app:  ccapi-org1-example-com
+spec:
+  selector:   
+      app: ccapi-org1-example-com
+      deploymentconfig: ccapi-org1-example-com
+  replicas: 1  
+  template:
+    metadata:
+      labels:
+        app:  ccapi-org1-example-com
+        deploymentconfig: ccapi-org1-example-com
+    spec:
+      containers:    
+      - name:  ccapi-org1-example-com
+        image:  node:carbon
+        workingDir: /rest-server
+        command: ["/bin/sh","-c"]        
+        args: ["
+                scp -r -P $SSH_SERVICE_SERVICE_PORT -o StrictHostKeyChecking=no root@$SSH_SERVICE_SERVICE_HOST:/mnt/rest-server/* /rest-server/ ;\
+                scp -r -P $SSH_SERVICE_SERVICE_PORT -o StrictHostKeyChecking=no root@$SSH_SERVICE_SERVICE_HOST:/mnt/certs/* /certs/ ;\
+                [ ! -d 'node_modules' ] && npm install;\
+                npm start; \
+                sleep infinity"
+              ]               
+        env:
+        - name: CONFIG_SDK_FILE
+          value: configsdk-org1.yaml
+        - name: DOCKER
+          value: "1"
+        - name: CHANNEL
+          value: mainchannel
+        - name: CCNAME
+          value: hlpesproject
+        ports:
+        - containerPort: PORT#
+        volumeMounts:
+          - name: id-rsa-pod
+            mountPath: /root/.ssh/id_rsa
+            subPath: id_rsa
+          - name: volume-certs
+            mountPath: /certs
+          - name: volume-rest-server
+            mountPath: /rest-server
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: anyuid-root
+      serviceAccountName: anyuid-root
+      volumes:
+        - name: id-rsa-pod
+          configMap:
+            name: podssh-id-rsa
+            defaultMode: 0600
+        - name: volume-certs
+          emptyDir: {}
+        - name: volume-rest-server
+          emptyDir: {}
+      restartPolicy: Always

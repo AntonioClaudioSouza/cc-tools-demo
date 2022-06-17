@@ -36,6 +36,9 @@ function createVolumeNFs(){
     oc create -f tools-for-openshift/volume-nfs/pv-pvc-nfs-volume.yaml
 }
 
+#
+# Delete volume NFs
+#
 function deleteVolumeNFs(){
     oc delete -f tools-for-openshift/volume-nfs/pv-pvc-nfs-volume.yaml
 }

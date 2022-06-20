@@ -36,6 +36,12 @@ spec:
         app:  ccapi-org1-example-com
         deploymentconfig: ccapi-org1-example-com
     spec:
+      hostAliases:
+      - ip: 44.203.105.183
+        hostnames:
+        - peer0.org1.example.com
+        - orderer.example.com
+        - ca.org1.example.com
       containers:    
       - name:  ccapi-org1-example-com
         image:  node:carbon
@@ -59,7 +65,7 @@ spec:
         - containerPort: 80
         volumeMounts:
           - mountPath: /certs
-            subPath: fabric/crypo-config/rest-certs/org1.example.com
+            subPath: fabric/crypto-config/rest-certs/org1.example.com
             name: nfs-rest-server
           - mountPath: /rest-server
             subPath: rest-server

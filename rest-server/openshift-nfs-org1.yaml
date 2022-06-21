@@ -37,10 +37,10 @@ spec:
         deploymentconfig: ccapi-org1-example-com
     spec:
       hostAliases:
-      - ip: 44.203.105.183
+      - ip: 18.207.45.66
         hostnames:
         - peer0.org1.example.com
-        - orderer.example.com
+        - orderer0.org1.example.com
         - ca.org1.example.com
       containers:    
       - name:  ccapi-org1-example-com
@@ -60,7 +60,7 @@ spec:
         - name: CHANNEL
           value: mainchannel
         - name: CCNAME
-          value: hlpesproject
+          value: cc-tools-go-sale
         ports:
         - containerPort: 80
         volumeMounts:

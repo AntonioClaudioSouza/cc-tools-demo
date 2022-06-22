@@ -1,101 +1,37 @@
 #!/usr/bin/env bash
 
 # Get env file
-#source .env
+source .env
 
-#while getopts "g" opt; do
-#    case $opt in
-#        g)
-#            GENERATE_CERT=true
-#            ;;
-#    esac
-#done
 
 #
-# Remove the pod ssh service 
+# Check source is load
 #
-function deletePodServiceSSH(){
+if [ -z "$PATH_TARGET_CONFIG_FILES_ORG" ]
+then
+   echo 'Arquivo de configuração ambiente nao encontrado. Nada a fazer'
+   exit 0
+fi
 
-    if [ "$POD_SSH_SERVICE" == false ]
+if [ -z "$TYPE_PERSISTENCE" ]
+then
+   echo 'Tipo de persistencia de dados não informado. Nada a fazer'
+   exit 0
+fi
+
+
+#
+# If not exist path target, create.
+#
+if [ ! -d "$PATH_TARGET_CONFIG_FILES_ORG" ]
+then
+    mkdir -p $PATH_TARGET_CONFIG_FILES_ORG
+    if [ ! -d "$PATH_TARGET_CONFIG_FILES_ORG" ]
     then
-        echo 'POD SSH nao habilitado'
-        return 0
-    fi 
-
-    oc delete -f tools-for-openshift/pod_service/podssh.yaml
-    sleep 1
-}
-
-#
-# Setup pod service SSH
-# 
-function createPodServiceSSH(){
-
-    if [ "$POD_SSH_SERVICE" == false ]
-    then
-        echo 'POD SSH nao habilitado'
-        return 0
-    fi 
-    
-    deletePodServiceSSH
-
-    oc create -f tools-for-openshift/pod_service/podssh.yaml
-    sleep 5
-
-    #criar imagem container servico
-    oc rsync ./ ssh-service:/mnt/rest-server/ -c ssh-service-img
-    oc rsync ../fabric/crypto-config/rest-certs/ ssh-service:/mnt/certs/ -c ssh-service-img
-}
-
-# ******************************************************************************
-#                           ROUTINES FOR NFS-SERVER
-# ******************************************************************************
-
-#
-# Setup local nfs server
-# Check config ipAddress for nfs server
-#
-function createServerNFs(){
-
-    if [ "$POD_SSH_SERVICE" == true ]
-    then
-        echo 'POD SSH habilitado, desabilite-o para continuar'
-        return 0
-    fi  
-
-    cd tools-for-openshift/volume-nfs/
-    ./create-server-nfs-local.sh
-    cd ../../
-}
-
-#
-# The server NFs must be running
-# If not installed, use function createServerNFs
-#
-function createVolumeNFs(){
-    
-    if [ "$POD_SSH_SERVICE" == true ]
-    then
-        echo 'POD SSH habilitado, desabilite-o para continuar'
-        return 0
-    fi     
-
-    oc create -f tools-for-openshift/volume-nfs/pv-pvc-nfs-volume.yaml
-}
-
-#
-# Delete volume NFs
-#
-function deleteVolumeNFs(){
-
-    if [ "$POD_SSH_SERVICE" == true ]
-    then
-        echo 'POD SSH habilitado, desabilite-o para continuar'
-        return 0
-    fi  
-
-    oc delete -f tools-for-openshift/volume-nfs/pv-pvc-nfs-volume.yaml
-}
+        echo 'Não foi possível criar pasta no volume persistente'
+        echo $PATH_TARGET_CONFIG_FILES_ORG
+    fi
+fi
 
 
 # ******************************************************************************
@@ -104,55 +40,18 @@ function deleteVolumeNFs(){
 #
 # Assemble name file of org
 #
-function setNameFileOrgConfig(){
+function getNameFileOrgConfig(){
 
     org=$1
 
     if [ -z "$org" ]
     then
-        echo 'informe a org!'       
+        echo 'informe o nome da org!'       
         return 
     fi
 
-    if [ "$POD_SSH_SERVICE" == true ]
-    then
-        tmp='openshift-ssh-'$org'.yaml'  
-    else
-        tmp='openshift-nfs-'$org'.yaml'
-    fi 
-
-    local nameFileOrgConfig=$tmp
-    echo $nameFileOrgConfig
-}
-
-#
-# Assemble name file config of template org
-#
-function setNameFileOrgTemplate(){
-
-    org=$1
-
-    if [ -z "$org" ]
-    then
-        echo 'informe a org!'       
-        return 
-    fi
-
-    if [ "$POD_SSH_SERVICE" == true ]
-    then
-        tmpNameArqTemplate='template/openshift-ssh-'$org'-template1.yaml'
-    else
-        tmpNameArqTemplate='template/openshift-nfs-'$org'-template1.yaml'
-    fi    
-    
-    if [ ! -f "$tmpNameArqTemplate" ]
-    then
-       echo $org' não localizada nos arqs de templates'
-       return 
-    fi
-
-    local nameFileOrgTemplate=$tmpNameArqTemplate
-    echo $nameFileOrgTemplate
+    local nameFileOrgConfig=$PATH_TARGET_CONFIG_FILES_ORG"/$org/openshift-$TYPE_PERSISTENCE-$org.yaml"    
+    echo $nameFileOrgConfig 
 }
 
 #
@@ -165,11 +64,11 @@ function restServerDeploy(){
     #
     # Get file config or for deploy
     #
-    nameFileConfigOrg=$( setNameFileOrgConfig $org )
+    nameFileConfigOrg=$( getNameFileOrgConfig $org )
 
     if [ ! -f "$nameFileConfigOrg" ]
     then
-       echo $org' não localizada nos arqs de configuração, tente "preparYamls" antes'
+       echo $org' não localizada nos arqs de configuração, para essa org!. Execute org-manager.sh create org='$org
        return 1
     fi
 
@@ -216,11 +115,11 @@ function restServerRemoveDeploy(){
     #
     # Get file config or for deploy
     #
-    nameFileConfigOrg=$( setNameFileOrgConfig $org )
+    nameFileConfigOrg=$( getNameFileOrgConfig $org )
 
     if [ ! -f "$nameFileConfigOrg" ]
     then
-       echo $org' não localizada nos arqs de configuração, tente "preparYamls" antes'
+       echo $org' não localizada nos arqs de configuração, para essa org!. Execute org-manager.sh create org='$org
        return 1
     fi
 
@@ -323,26 +222,6 @@ function restServerSuspendAll(){
 #                           ROUTINES FOR TOOLS
 # ******************************************************************************
 #
-# Help
-#
-function showFunctions(){
-
-    echo 'deletePodServiceSSH'
-    echo 'createPodServiceSSH'
-
-    echo 'createServerNFs'
-    echo 'createVolumeNFs'
-	echo 'deleteVolumeNFs'
-
-    echo 'restServerDeploy'
-    echo 'restServerRemoveDeploy'
-    echo 'restServerScaleTo'
-    
-    echo 'preparYamls'  
-    echo 'restServerSuspendAll'      
-}
-
-#
 # Search value in yaml file config of org
 #
 function getValueFileConfigOrg(){
@@ -350,7 +229,7 @@ function getValueFileConfigOrg(){
     org=$1
     searchBy=$2
     
-    nameFileConfigOrg=$( setNameFileOrgConfig $org )
+    nameFileConfigOrg=$( getNameFileOrgConfig $org )
 
     if [ ! -f "$nameFileConfigOrg" ]
     then
@@ -401,105 +280,22 @@ function parse_yaml() {
 }
 
 #
-# Parse and prepar file config template by org
+# Help
 #
-function preparYamls(){
-    
-    org=$1
-    nameFileTemplateOrgNewConfigOutput=$( setNameFileOrgConfig $org )
-    nameFileTemplateOrg=$( setNameFileOrgTemplate $org )
+function showFunctions(){
 
-    if [ ! -f "$nameFileTemplateOrg" ]
-    then
-       echo $org' não localizada nos arqs de configuração'       
-       return 
-    fi
-
-    echo 'Preparando configurações de '$org
-
-    if [ "$HTTPS" == true ] 
-    then        
-        sed "s/PORT#/443/g" $nameFileTemplateOrg > $nameFileTemplateOrgNewConfigOutput
-    else        
-        sed "s/PORT#/80/g" $nameFileTemplateOrg > $nameFileTemplateOrgNewConfigOutput
-    fi
-
-    # Generate certs for rest-server
-    cd scripts
-    if [ "$HTTPS" == true ]; then
-    if [ "$GENERATE_CERT" == true ]; then
-        ./generate-dummy-cert.sh -d $DOMAIN
-        if [ "$LETS_ENCRYPT" == true ];then
-        ./letsencrypt-init.sh -g
-        fi
-    else
-        if [ "$LETS_ENCRYPT" == true ];then
-            ./letsencrypt-init.sh
-        fi
-    fi
-    fi
-    cd ..
-
-    echo 'Finalizado sucesso'
-    return 0
+    echo 'restServerDeploy'
+    echo 'restServerRemoveDeploy'
+    echo 'restServerScaleTo'        
+    echo 'restServerSuspendAll'      
 }
 
-#
-#
-#
-#
-#
-#
-function restServerCreateOrg(){
-
-for ARGUMENT in "$@"
-do
-   KEY=$(echo $ARGUMENT | cut -f1 -d=)
-
-   KEY_LENGTH=${#KEY}
-   VALUE="${ARGUMENT:$KEY_LENGTH+1}"
-
-   export "$KEY"="$VALUE"
-done
-
-# use here your expected variables
-echo "STEPS = $STEPS"
-echo "REPOSITORY_NAME = $REPOSITORY_NAME"
-echo "EXTRA_VALUES = $EXTRA_VALUES"
-}
-
-#
-#
-#
-#
-#
-#
 
 # * ------------------------
 # * Script starts here.
 # * ------------------------
 case $1 in
-
-    deletePodServiceSSH)
-        deletePodServiceSSH
-        exit 1
-        ;;
-    createPodServiceSSH)
-        createPodServiceSSH
-        exit 1
-        ;;
-	createServerNFs)
-		createServerNFs
-        exit 1
-		;;
-    createVolumeNFs)
-		createVolumeNFs
-        exit 1
-		;;
-    deleteVolumeNFs)
-		deleteVolumeNFs
-        exit 1
-		;;
+  
     restServerDeploy)
 		restServerDeploy $2
         exit 1
@@ -517,15 +313,6 @@ case $1 in
 		restServerSuspendAll $2
         exit 1
 		;;
-    preparYamls)
-        preparYamls $2
-        exit 1
-        ;;
-
-    restServerCreateOrg)
-        restServerCreateOrg $@
-        exit 1
-        ;;
 
     help)
         showFunctions

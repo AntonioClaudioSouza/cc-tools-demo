@@ -66,10 +66,12 @@ spec:
         - containerPort: PORT#
         volumeMounts:
           - mountPath: /certs
-            subPath: fabric/crypto-config/rest-certs/#ORG#.#DOMAIN#
+            subPath: orgs/#ORG#/certs
+            #subPath: fabric/crypto-config/rest-certs/#ORG#.#DOMAIN#
             name: nfs-rest-server
           - mountPath: /rest-server
-            subPath: rest-server
+            subPath: orgs/#ORG#/rest-server
+            #subPath: rest-server
             name: nfs-rest-server            
       dnsPolicy: ClusterFirst
       restartPolicy: Always

@@ -4,6 +4,7 @@
 # Get env file
 source .env
 
+
 #
 # Check source is load
 #
@@ -13,7 +14,26 @@ then
    exit 0
 fi
 
-targetFolderOrgs=$PATH_TARGET_CONFIG_FILES_ORG
+if [ -z "$TYPE_PERSISTENCE" ]
+then
+   echo 'Tipo de persistencia de dados não informado. Nada a fazer'
+   exit 0
+fi
+
+
+#
+# If not exist path target, create.
+#
+if [ ! -d "$PATH_TARGET_CONFIG_FILES_ORG" ]
+then
+    mkdir -p $PATH_TARGET_CONFIG_FILES_ORG
+    if [ ! -d "$PATH_TARGET_CONFIG_FILES_ORG" ]
+    then
+        echo 'Não foi possível criar pasta no volume persistente'
+        echo $PATH_TARGET_CONFIG_FILES_ORG
+    fi
+fi
+
 
 
 #
@@ -59,10 +79,38 @@ function create(){
     then
         domain='example.com'
     fi
+
+    # Check https of org
+    if [ -z "$https" ]
+    then
+        https=false        
+    fi
+
+    # Set port rest-server
+    if [ "$https" == "true" ]
+    then
+        port='443'
+    else
+        port='80'
+    fi
+
+    # Check lets_encrypt of org
+    if [ -z "$lets_encrypt" ]
+    then
+        lets_encrypt=false
+    fi
+
+    # Check useauth of org
+    if [ -z "$useauth" ]
+    then
+        useauth=false
+    fi
     
+    #
     # Check folder
+    #
     currentPath=$(dirname "$0")   
-    pathNewOrg=$targetFolderOrgs"/"$org
+    pathNewOrg=$PATH_TARGET_CONFIG_FILES_ORG"/"$org
 
     if [ -d "$pathNewOrg" ]
     then
@@ -115,12 +163,12 @@ function create(){
     # Create File .env for org
     #    
     fileName=$pathNewOrg'/rest-server/.env'
-    echo "HTTPS=false"          >> $fileName
-    echo "LETS_ENCRYPT=false"   >> $fileName
+    echo "HTTPS=$https"         >> $fileName
+    echo "LETS_ENCRYPT=$lets_encrypt" >> $fileName
     echo "DOMAIN=$domain"       >> $fileName
     echo "USERNAME="            >> $fileName
     echo "PASSWORD="            >> $fileName
-    echo "USEAUTH=false"        >> $fileName
+    echo "USEAUTH=$useauth"     >> $fileName
     echo "POD_SSH_SERVICE=false">> $fileName
 
     #
@@ -133,11 +181,33 @@ function create(){
     #
     # Create File openshift-nfs-org.yaml
     # 
-    domain_label="${domain//./-}"     
+    domain_label="${domain//./-}"   
     nameFileConfigOpenShiftTemplate=$currentPath'/templates/openshift-nfs-template1.yaml'
     nameFileConfigOpenShiftOutPut=$pathNewOrg"/openshift-nfs-$org.yaml" 
-    sed "s/#ORG#/$org/g;s/#DOMAIN#/$domain/g;s/#DOMAIN-FOR-LABEL#/$domain_label/g" $nameFileConfigOpenShiftTemplate > $nameFileConfigOpenShiftOutPut
+    sed "s/#ORG#/$org/g;s/#DOMAIN#/$domain/g;s/#DOMAIN-FOR-LABEL#/$domain_label/g;s/PORT#/$port/g" $nameFileConfigOpenShiftTemplate > $nameFileConfigOpenShiftOutPut
+    
+    #
+    # Show results
+    #
     tree $pathNewOrg -L 2
+
+
+    #check.....
+    # Generate certs for rest-server
+    #cd scripts
+    #if [ "$HTTPS" == true ]; then
+    #if [ "$GENERATE_CERT" == true ]; then
+    #    ./generate-dummy-cert.sh -d $DOMAIN
+    #    if [ "$LETS_ENCRYPT" == true ];then
+    #    ./letsencrypt-init.sh -g
+    #    fi
+    #else
+    #    if [ "$LETS_ENCRYPT" == true ];then
+    #        ./letsencrypt-init.sh
+    #    fi
+    #fi
+    #fi
+    #cd ..
 }   
 
 #
@@ -166,7 +236,7 @@ function remove(){
 
     # Check folder
     #currentPath=$(dirname "$0")
-    pathNewOrg=$targetFolderOrgs"/"$org
+    pathNewOrg=$PATH_TARGET_CONFIG_FILES_ORG"/"$org
 
     if [ -d "$pathNewOrg" ]
     then

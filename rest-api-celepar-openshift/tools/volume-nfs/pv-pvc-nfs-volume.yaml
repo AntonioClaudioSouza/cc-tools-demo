@@ -14,7 +14,8 @@ spec:
    - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   nfs:
-   path: /nfsshare/cc-tools-demo
+   #path: /nfsshare/cc-tools-demo
+   path: /nfsshare/goledger-celepar/
    server: 172.31.10.22   #Address NFS-Server
 ---
 apiVersion: v1                                  

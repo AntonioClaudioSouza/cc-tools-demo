@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
-#https://unix.stackexchange.com/questions/129391/passing-named-arguments-to-shell-scripts
+
+
+# Get env file
+source .env
+
+#
+# Check source is load
+#
+if [ -z "$PATH_TARGET_CONFIG_FILES_ORG" ]
+then
+   echo 'Arquivo de configuração ambiente nao encontrado. Nada a fazer'
+   exit 0
+fi
+
+targetFolderOrgs=$PATH_TARGET_CONFIG_FILES_ORG
+
 
 #
 # Create new enviroment org
@@ -35,7 +50,7 @@ function create(){
     # Check org
     if [ -z "$org" ]
     then
-        echo 'informe o nome da nova org!'       
+        echo 'informe o nome da nova org para rest-api, nada a fazer'       
         return 
     fi
 
@@ -46,8 +61,8 @@ function create(){
     fi
     
     # Check folder
-    currentPath=$(dirname "$0")
-    pathNewOrg=$currentPath"/orgs/"$org
+    currentPath=$(dirname "$0")   
+    pathNewOrg=$targetFolderOrgs"/"$org
 
     if [ -d "$pathNewOrg" ]
     then
@@ -83,10 +98,23 @@ function create(){
         return 
     fi
 
+    mkdir $pathNewOrg'/rest-server' > /dev/null 2>&1
+    if [ ! -d "$pathNewOrg/rest-server" ]
+    then
+        echo 'falhou ao tentar criar pasta a rest-server, nada a fazer'
+        return 
+    fi
+
+    #
+    # Copy files of rest-server into org folder
+    #
+    cp -r $currentPath'/templates/rest-server/.'  $pathNewOrg'/rest-server/'
+
+
     #
     # Create File .env for org
     #    
-    fileName=$pathNewOrg'/.env'
+    fileName=$pathNewOrg'/rest-server/.env'
     echo "HTTPS=false"          >> $fileName
     echo "LETS_ENCRYPT=false"   >> $fileName
     echo "DOMAIN=$domain"       >> $fileName
@@ -98,22 +126,123 @@ function create(){
     #
     # Create File configsdk-org.yaml    
     #
-    nameFileConfigSdkTemplate='templates/configsdk-template1.yaml'
-    nameFileConfigSdkOutPut=$pathNewOrg"/configsdk-$org.yaml"    
+    nameFileConfigSdkTemplate=$currentPath'/templates/configsdk-template1.yaml'
+    nameFileConfigSdkOutPut=$pathNewOrg"/rest-server/configsdk-$org.yaml"    
     sed "s/#ORG#/$org/g;s/#DOMAIN#/$domain/g" $nameFileConfigSdkTemplate > $nameFileConfigSdkOutPut
        
     #
     # Create File openshift-nfs-org.yaml
     # 
     domain_label="${domain//./-}"     
-    nameFileConfigOpenShiftTemplate='templates/openshift-nfs-template1.yaml'
+    nameFileConfigOpenShiftTemplate=$currentPath'/templates/openshift-nfs-template1.yaml'
     nameFileConfigOpenShiftOutPut=$pathNewOrg"/openshift-nfs-$org.yaml" 
     sed "s/#ORG#/$org/g;s/#DOMAIN#/$domain/g;s/#DOMAIN-FOR-LABEL#/$domain_label/g" $nameFileConfigOpenShiftTemplate > $nameFileConfigOpenShiftOutPut
- 
+    tree $pathNewOrg -L 2
 }   
 
+#
+# Remove config org
+# params:
+#   org   = org name
+function remove(){
+
+    # Get options of arguments
+    for ARGUMENT in "$@"
+    do
+        key=$(echo $ARGUMENT | cut -f1 -d=)
+
+        KEY_LENGTH=${#key}
+        VALUE="${ARGUMENT:$KEY_LENGTH+1}"
+
+        export "$key"="$VALUE"
+    done
+
+    # Check org
+    if [ -z "$org" ]
+    then
+        echo 'informe o nome da org a ser removida da rest-api, nada a fazer'       
+        return 
+    fi
+
+    # Check folder
+    #currentPath=$(dirname "$0")
+    pathNewOrg=$targetFolderOrgs"/"$org
+
+    if [ -d "$pathNewOrg" ]
+    then
+        while true; do
+            read -p "Tem certeza que deseja remover essa org:($org) da rest-api(SN)? " yn
+            case $yn in
+                [Ss]* ) break;;
+                [Nn]* ) echo 'Operacao abortada';exit;;
+                * ) echo "Por favor informe sim ou nao.";;
+            esac
+        done
+
+        # Remove folder config org
+        rm -rf $pathNewOrg > /dev/null 2>&1
+        if [ -d "$pathNewOrg" ]
+        then
+            echo 'falhou ao tentar remover os arquivos de configuracao, nada a fazer'
+            return
+        fi        
+    else
+        echo 'org nao localizada para remocao da rest-api, nada a fazer'
+    fi
+}
+
+#
+# List Orgs in folders
+# params:
+#   org   = org name
+#   or no params
+function list(){
+
+    # Get options of arguments
+    for ARGUMENT in "$@"
+    do
+        key=$(echo $ARGUMENT | cut -f1 -d=)
+
+        KEY_LENGTH=${#key}
+        VALUE="${ARGUMENT:$KEY_LENGTH+1}"
+
+        export "$key"="$VALUE"
+    done
+
+    # Check org
+    if [ -z "$org" ]
+    then
+        tree $PATH_TARGET_CONFIG_FILES_ORG -L 1
+        return 
+    fi
+
+    tree $PATH_TARGET_CONFIG_FILES_ORG'/'$org -L 2
+}
+
 function showFunctions(){
-    echo "wow!"
+    echo " "
+    echo " "
+    echo "> create"
+    echo "  Cria os arquivos de configuração para uma nova org rest-api"
+    echo "  Parametros:"
+    echo "   org            = nome a org a ser criada"
+    echo "   domain         = domínio que a org pertence"
+    echo "   force          = caso exista, força a criação ( valor: true ou false )"
+    echo "   https          = usa https? ( valor: true ou false )"
+    echo "   lets_encrypt   = usa lets_encrypt? ( valor: true ou false )"
+    echo "   useauth        = usa useauth? ( valor: true ou false )"
+    echo " "
+    echo "  Exemplo: ./org-manager.sh create org=org1 domain=example.com force=true"
+    echo " "
+    echo " "
+    echo "> remove"
+    echo "  Remove os arquivos de configuração de uma org rest-api"
+    echo "  Parametros:"
+    echo "   org  = nome a org a ser removida"
+    echo " "
+    echo "  Exemplo: ./org-manager.sh remove org=org1"
+    echo " "
+    echo " "
 }
 
 # * ------------------------
@@ -126,7 +255,14 @@ case $1 in
         exit 1
         ;;
 
-  
+    remove)
+        remove $@
+        exit 1
+        ;;
+    list)
+        list $@
+        exit 1
+        ;;        
     *)
 		showFunctions
         exit 1

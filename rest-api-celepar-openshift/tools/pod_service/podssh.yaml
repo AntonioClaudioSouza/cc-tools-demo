@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authorized-keys-pods
+  namespace: hlpesproject-net 
+data:
+  authorized_keys: |
+    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDD0txUZBaJSUJ2qzls1O1OySw2/JIru/yUrCrRhBH+C/AYkwxXMtnbKm72E0Qi6h+Cjqii7Cbaw/TbGHmTge0WzXqPwCgQcFk+E6t+N1F1VY3erUwa77n9gxgxsI2l/Sk98EZSHHXvzKXwSpvhfFWDS8b1GI21qU+BxD6aNsKgaNgNAZRiApgWpgcob+LK1dQjZJIi4fviHhPx1tnKaNvH2MR+ep82RbevYDMGu0Kj5ifdtCY5dqZyLP2nTjSLk7gxZ2jk13gMCGuiQ0Fi3gt+2jCPbgBxX9sf4vOjNur4YjQeMrYIM0oNullb5WG9oXpy9zrJKn+qevt2qRjga3Cr demo@demo
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ssh-service
+  namespace: hlpesproject-net
+spec:  
+  selector:
+    app: ssh-service  
+  ports:      
+  - port: 2222     
+    targetPort: 22  
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: ssh-service
+  namespace: hlpesproject-net 
+  labels:
+    app: ssh-service
+spec:
+  selector:
+    matchLabels:
+      app: ssh-service  
+  containers:
+    - name: ssh-service-img
+      image: ssh-golegder-service:v1 
+      volumeMounts:
+      - name: authorized-keys-pod
+        mountPath: /root/.ssh/authorized_keys
+        subPath: authorized_keys
+      - name: arqs-rest-server
+        mountPath: /mnt/rest-server     
+      - name: arqs-servico-certs
+        mountPath: /mnt/certs
+      ports:
+        - containerPort: 22
+  volumes:
+    - name: authorized-keys-pod
+      configMap:
+        name: authorized-keys-pods
+        defaultMode: 0600
+    - name: arqs-rest-server
+      emptyDir: {}
+    - name: arqs-servico-certs
+      emptyDir: {}
+  securityContext: {}
+  serviceAccount: anyuid-root
+  serviceAccountName: anyuid-root
+  

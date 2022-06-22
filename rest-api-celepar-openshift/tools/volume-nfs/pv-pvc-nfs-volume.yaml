@@ -1,0 +1,30 @@
+#
+# Server NFS is required
+#
+apiVersion: v1                                  
+kind: PersistentVolume
+metadata:
+  name: pv-cc-rest-server
+  namespace: hlpesproject-net 
+spec:
+  capacity:
+   storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+   - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+   path: /nfsshare/cc-tools-demo
+   server: 172.31.10.22   #Address NFS-Server
+---
+apiVersion: v1                                  
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-cc-rest-server
+spec:
+  volumeName: pv-cc-rest-server
+  accessModes:
+   - ReadWriteMany
+  resources:
+   requests:
+    storage: 1Gi

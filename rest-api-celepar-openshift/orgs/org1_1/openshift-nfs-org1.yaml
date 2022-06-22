@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Service
+metadata:  
+  labels:
+    app: ccapi-org1-example-com
+  name: ccapi-org1-example-com
+  namespace: hlpesproject-net
+spec:
+  ports:
+  - nodePort: 32081
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ccapi-org1-example-com
+  sessionAffinity: ClientIP
+  type: LoadBalancer
+ # externalIPs:    #only k8s, if not get automatic external-ip
+ # - 0.0.0.0  
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name:  ccapi-org1-example-com
+  namespace: hlpesproject-net  
+  labels:
+    app:  ccapi-org1-example-com
+spec:
+  selector:   
+      app: ccapi-org1-example-com
+      deploymentconfig: ccapi-org1-example-com
+  replicas: 1  
+  template:
+    metadata:
+      labels:
+        app:  ccapi-org1-example-com
+        deploymentconfig: ccapi-org1-example-com
+    spec:
+      hostAliases:
+      - ip: 18.207.45.66
+        hostnames:
+        - peer0.org1.example.com
+        - orderer0.org1.example.com
+        - ca.org1.example.com
+      containers:    
+      - name:  ccapi-org1-example-com
+        image:  node:carbon
+        workingDir: /rest-server
+        command: ["/bin/sh","-c"]        
+        args: ["               
+                [ ! -d 'node_modules' ] && npm install;\
+                npm start; \
+                sleep infinity"
+              ]               
+        env:
+        - name: CONFIG_SDK_FILE
+          value: configsdk-org1.yaml
+        - name: DOCKER
+          value: "1"
+        - name: CHANNEL
+          value: mainchannel
+        - name: CCNAME
+          value: cc-tools-go-sale
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - mountPath: /certs
+            subPath: fabric/crypto-config/rest-certs/org1.example.com
+            name: nfs-rest-server
+          - mountPath: /rest-server
+            subPath: rest-server
+            name: nfs-rest-server            
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: anyuid-root
+      serviceAccountName: anyuid-root
+      volumes:        
+        - name: nfs-rest-server
+          persistentVolumeClaim:
+            claimName: pvc-cc-rest-server

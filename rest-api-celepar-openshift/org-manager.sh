@@ -38,45 +38,79 @@ function create(){
         echo 'informe o nome da nova org!'       
         return 
     fi
+
+    # Check domain of org
+    if [ -z "$domain" ]
+    then
+        domain='example.com'
+    fi
     
+    # Check folder
     currentPath=$(dirname "$0")
     pathNewOrg=$currentPath"/orgs/"$org
 
     if [ -d "$pathNewOrg" ]
     then
-
         if [ "$force" == "false" ]
         then
             echo 'arquivos de configuracao da org já existem, nada a fazer'
             return
         fi
-        
-        pathNewOrg='/tmp/demo1/org1'
-        rmdir $pathNewOrg > /dev/null 2>&1
+      
+        # If force=true, remove folder
+        rm -rf $pathNewOrg > /dev/null 2>&1
         if [ -d "$pathNewOrg" ]
         then
             echo 'falhou ao tentar remover os arquivos de configuracao, nada a fazer'
             return
-        fi
-        
+        fi        
     fi
 
+    #
+    # Create folder for files of new org
+    # 
+    mkdir $pathNewOrg > /dev/null 2>&1
+    if [ ! -d "$pathNewOrg" ]
+    then
+        echo 'falhou ao tentar criar pasta para os arquivos de configuracao, nada a fazer'
+        return 
+    fi
 
-#    if [ "$POD_SSH_SERVICE" == true ]
-#    then
-#        tmpNameArqTemplate='template/openshift-ssh-'$org'-template1.yaml'
-#    else
-#        tmpNameArqTemplate='template/openshift-nfs-'$org'-template1.yaml'
-#    fi    
-    
-#    if [ ! -f "$tmpNameArqTemplate" ]
-#    then
-#       echo $org' não localizada nos arqs de templates'
-#       return 
-#    fi
+    mkdir $pathNewOrg'/certs' > /dev/null 2>&1
+    if [ ! -d "$pathNewOrg/certs" ]
+    then
+        echo 'falhou ao tentar criar pasta para os certificados, nada a fazer'
+        return 
+    fi
 
+    #
+    # Create File .env for org
+    #    
+    fileName=$pathNewOrg'/.env'
+    echo "HTTPS=false"          >> $fileName
+    echo "LETS_ENCRYPT=false"   >> $fileName
+    echo "DOMAIN=$domain"       >> $fileName
+    echo "USERNAME="            >> $fileName
+    echo "PASSWORD="            >> $fileName
+    echo "USEAUTH=false"        >> $fileName
+    echo "POD_SSH_SERVICE=false">> $fileName
 
-}
+    #
+    # Create File configsdk-org.yaml    
+    #
+    nameFileConfigSdkTemplate='templates/configsdk-template1.yaml'
+    nameFileConfigSdkOutPut=$pathNewOrg"/configsdk-$org.yaml"    
+    sed "s/#ORG#/$org/g;s/#DOMAIN#/$domain/g" $nameFileConfigSdkTemplate > $nameFileConfigSdkOutPut
+       
+    #
+    # Create File openshift-nfs-org.yaml
+    # 
+    domain_label="${domain//./-}"     
+    nameFileConfigOpenShiftTemplate='templates/openshift-nfs-template1.yaml'
+    nameFileConfigOpenShiftOutPut=$pathNewOrg"/openshift-nfs-$org.yaml" 
+    sed "s/#ORG#/$org/g;s/#DOMAIN#/$domain/g;s/#DOMAIN-FOR-LABEL#/$domain_label/g" $nameFileConfigOpenShiftTemplate > $nameFileConfigOpenShiftOutPut
+ 
+}   
 
 function showFunctions(){
     echo "wow!"

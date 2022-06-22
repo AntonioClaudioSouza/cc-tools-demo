@@ -22,21 +22,21 @@ version: "1.0"
 client:
   # Which organization does this application instance belong to? The value must be the name of an org
   # defined under "organizations"
-  organization: org1
+  organization: #ORG#
 
   # Some SDKs support pluggable KV stores, the properties under "credentialStore"
   # are implementation specific
   credentialStore:
     # Specific to FileKeyValueStore.js. Can be others if using an alternative impl. For instance,
     # CouchDBKeyValueStore.js would require an object here for properties like url, db name, etc.
-    path: "/tmp/hfc-kvs/org1"
+    path: "/tmp/hfc-kvs/#ORG#"
 
     # Specific to the CryptoSuite implementation. Software-based implementations like
     # CryptoSuite_ECDSA_AES.js requires a key store. PKCS#11 based implementations does
     # not.
     cryptoStore:
       # Specific to the underlying KeyValueStore that backs the crypto key store.
-      path: "/tmp/hfc-cvs/org1"
+      path: "/tmp/hfc-cvs/#ORG#"
 
 # [Optional]. Specific to Composer environment
 #wallet: wallet-name
@@ -46,7 +46,7 @@ channels:
     orderers:
       - orderer0
     peers:
-      peer0.org1.example.com:
+      peer0.#ORG#.#DOMAIN#:
         # [Optional]. will this peer be sent transaction proposals for endorsement? The peer must
         # have the chaincode installed. The app can also use this property to decide which peers
         # to send the chaincode install request. Default: true
@@ -70,11 +70,11 @@ channels:
 # list of participating organizations in this network
 #
 organizations:
-  org1:
-    mspid: org1MSP
+  #ORG#:
+    mspid: #ORG#MSP
 
     peers:
-      - peer0.org1.example.com
+      - peer0.#ORG#.#DOMAIN#
 
     # [Optional]. Certificate Authorities issue certificates for identification purposes in a Fabric based
     # network. Typically certificates provisioning is done in a separate process outside of the
@@ -82,7 +82,7 @@ organizations:
     # dynamic certificate management (enroll, revoke, re-enroll). The following section is only for
     # Fabric-CA servers.
     certificateAuthorities:
-      - ca-org1
+      - ca-#ORG#
 
     # [Optional]. If the application is going to make requests that are reserved to organization
     # administrators, including creating/updating channels, installing/instantiating chaincodes, it
@@ -103,12 +103,12 @@ organizations:
 #
 orderers:
   orderer0:
-    url: grpcs://orderer0.org1.example.com:7050
+    url: grpcs://orderer0.#ORG#.#DOMAIN#:7050
     
     # these are standard properties defined by the gRPC library
     # they will be passed in as-is to gRPC client constructor
     grpcOptions:
-      ssl-target-name-override: orderer0.org1.example.com
+      ssl-target-name-override: orderer0.#ORG#.#DOMAIN#
 
     tlsCACerts:
       path: /certs/ca.crt
@@ -118,12 +118,12 @@ orderers:
 # and event listener registration.
 #
 peers:
-  peer0.org1.example.com:
+  peer0.#ORG#.#DOMAIN#:
     # this URL is used to send endorsement and query requests
-    url: grpcs://peer0.org1.example.com:7051
+    url: grpcs://peer0.#ORG#.#DOMAIN#:7051
     
     grpcOptions:
-      ssl-target-name-override: peer0.org1.example.com
+      ssl-target-name-override: peer0.#ORG#.#DOMAIN#
 
     tlsCACerts:
       path: /certs/ca.crt
@@ -134,8 +134,8 @@ peers:
 # Certificate Authority instead of Fabric-CA, in which case this section would not be specified.
 #
 certificateAuthorities:
-  ca-org1:    
-    url: https://ca.org1.example.com:7054
+  ca-#ORG#:    
+    url: https://ca.#ORG#.#DOMAIN#:7054
     # the properties specified under this object are passed to the 'http' client verbatim when
     # making the request to the Fabric-CA server
     httpOptions:
@@ -149,4 +149,4 @@ certificateAuthorities:
       - enrollId: admin
         enrollSecret: adminpw
     # [Optional] The optional name of the CA.
-    caName: ca-org1-gov-br
+    caName: ca-#ORG#-gov-br

@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:  
   labels:
-    app: ccapi-#ORG#-#DOMAIN-FOR-LABEL#
-  name: ccapi-#ORG#-#DOMAIN-FOR-LABEL#
+    app: ccapi-org3-example-com
+  name: ccapi-org3-example-com
   namespace: hlpesproject-net
 spec:
   ports:
@@ -12,7 +12,7 @@ spec:
     protocol: TCP
     targetPort: PORT#
   selector:
-    app: ccapi-#ORG#-#DOMAIN-FOR-LABEL#
+    app: ccapi-org3-example-com
   sessionAffinity: ClientIP
   type: LoadBalancer
  # externalIPs:    #only k8s, if not get automatic external-ip
@@ -21,29 +21,29 @@ spec:
 apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
-  name:  ccapi-#ORG#-#DOMAIN-FOR-LABEL#
+  name:  ccapi-org3-example-com
   namespace: hlpesproject-net  
   labels:
-    app:  ccapi-#ORG#-#DOMAIN-FOR-LABEL#
+    app:  ccapi-org3-example-com
 spec:
   selector:   
-      app: ccapi-#ORG#-#DOMAIN-FOR-LABEL#
-      deploymentconfig: ccapi-#ORG#-#DOMAIN-FOR-LABEL#
+      app: ccapi-org3-example-com
+      deploymentconfig: ccapi-org3-example-com
   replicas: 1  
   template:
     metadata:
       labels:
-        app:  ccapi-#ORG#-#DOMAIN-FOR-LABEL#
-        deploymentconfig: ccapi-#ORG#-#DOMAIN-FOR-LABEL#
+        app:  ccapi-org3-example-com
+        deploymentconfig: ccapi-org3-example-com
     spec:
       hostAliases:
       - ip: 18.207.45.66
         hostnames:
-        - peer0.#ORG#.#DOMAIN#
-        - orderer0.#ORG#.#DOMAIN#
-        - ca.#ORG#.#DOMAIN#
+        - peer0.org3.example.com
+        - orderer0.org3.example.com
+        - ca.org3.example.com
       containers:     
-      - name:  ccapi-#ORG#-#DOMAIN-FOR-LABEL#
+      - name:  ccapi-org3-example-com
         image:  node:carbon
         workingDir: /rest-server
         command: ["/bin/sh","-c"]        
@@ -54,7 +54,7 @@ spec:
               ]               
         env:
         - name: CONFIG_SDK_FILE
-          value: configsdk-#ORG#.yaml
+          value: configsdk-org3.yaml
         - name: DOCKER
           value: "1"
         - name: CHANNEL
@@ -66,7 +66,7 @@ spec:
         - containerPort: PORT#
         volumeMounts:
           - mountPath: /certs
-            subPath: fabric/crypto-config/rest-certs/#ORG#.#DOMAIN#
+            subPath: fabric/crypto-config/rest-certs/org3.example.com
             name: nfs-rest-server
           - mountPath: /rest-server
             subPath: rest-server

@@ -83,7 +83,17 @@ function restServerDeploy(){
         return 
     fi
 
-
+    #
+    # Create namespace and set app root permissions
+    #
+    #nameSpace=$( getValueFileConfigOrg $org 'metadata_namespace' )
+    #if [ ! -z "$nameSpace" ]
+    #then
+    #    oc create ns $nameSpace
+    #    oc create serviceaccount anyuid-root
+    #    oc adm policy add-scc-to-user anyuid -z anyuid-root
+    #fi
+    
     #
     # Deploy and wait start pods
     #
@@ -147,6 +157,15 @@ function restServerRemoveDeploy(){
         status=$(oc get pods --selector app=$nameAppLabel --no-headers -o wide | awk '{print $3}')                
         echo "wait...:"$status                    
     done  
+
+    #
+    # Delete namespace and set app root permissions
+    #
+    #nameSpace=$( getValueFileConfigOrg $org 'metadata_namespace' )
+    #if [ ! -z "$nameSpace" ]
+    #then
+    #    oc delete ns $nameSpace
+    #fi
 }
 
 #

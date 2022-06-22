@@ -60,18 +60,15 @@ spec:
         - name: CHANNEL
           value: mainchannel
         - name: CCNAME
-          value: hlpesproject
-          #cc-tools-go-sale
+          value: #CHAINCODE-NAME#          
         ports:
         - containerPort: PORT#
         volumeMounts:
           - mountPath: /certs
-            subPath: orgs/#ORG#/certs
-            #subPath: fabric/crypto-config/rest-certs/#ORG#.#DOMAIN#
+            subPath: orgs/#ORG#/certs            
             name: nfs-rest-server
           - mountPath: /rest-server
-            subPath: orgs/#ORG#/rest-server
-            #subPath: rest-server
+            subPath: orgs/#ORG#/rest-server            
             name: nfs-rest-server            
       dnsPolicy: ClusterFirst
       restartPolicy: Always

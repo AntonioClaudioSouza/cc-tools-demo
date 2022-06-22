@@ -39,12 +39,13 @@ fi
 #
 # Create new enviroment org
 # params:
-#   org     = org name
-#   domain  = domain of org
-#   force   = true              # If exist files config, force new creation
-#   https   = true or false
-#   lets_encrypt = true or false
-#   useauth = true or false
+#   org             = org name
+#   domain          = domain of org
+#   chaincode       = name of chaincode
+#   force           = true              # If exist files config, force new creation
+#   https           = true or false
+#   lets_encrypt    = true or false
+#   useauth         = true or false
 #
 function create(){
 
@@ -71,6 +72,13 @@ function create(){
     if [ -z "$org" ]
     then
         echo 'informe o nome da nova org para rest-api, nada a fazer'       
+        return 
+    fi
+
+    # Check name chaincode
+    if [ -z "$chaincode" ]
+    then
+        echo 'informe o nome do chaincode, nada a fazer'       
         return 
     fi
 
@@ -121,7 +129,8 @@ function create(){
         fi
       
         # If force=true, remove folder
-        rm -rf $pathNewOrg > /dev/null 2>&1
+        echo "Aguarde..."
+        sudo rm -rf $pathNewOrg > /dev/null 2>&1
         if [ -d "$pathNewOrg" ]
         then
             echo 'falhou ao tentar remover os arquivos de configuracao, nada a fazer'
@@ -184,7 +193,8 @@ function create(){
     domain_label="${domain//./-}"   
     nameFileConfigOpenShiftTemplate=$currentPath'/templates/openshift-nfs-template1.yaml'
     nameFileConfigOpenShiftOutPut=$pathNewOrg"/openshift-nfs-$org.yaml" 
-    sed "s/#ORG#/$org/g;s/#DOMAIN#/$domain/g;s/#DOMAIN-FOR-LABEL#/$domain_label/g;s/PORT#/$port/g" $nameFileConfigOpenShiftTemplate > $nameFileConfigOpenShiftOutPut
+    sed "s/#ORG#/$org/g;s/#DOMAIN#/$domain/g;s/#DOMAIN-FOR-LABEL#/$domain_label/g;s/PORT#/$port/g;s/#CHAINCODE-NAME#/$chaincode/g" $nameFileConfigOpenShiftTemplate > $nameFileConfigOpenShiftOutPut
+    
     
     #
     # Show results
@@ -297,6 +307,7 @@ function showFunctions(){
     echo "  Parametros:"
     echo "   org            = nome a org a ser criada"
     echo "   domain         = domínio que a org pertence"
+    echo "   chaincode      = nome do chaincode"
     echo "   force          = caso exista, força a criação ( valor: true ou false )"
     echo "   https          = usa https? ( valor: true ou false )"
     echo "   lets_encrypt   = usa lets_encrypt? ( valor: true ou false )"

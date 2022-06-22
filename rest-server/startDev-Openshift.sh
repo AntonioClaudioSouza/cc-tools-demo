@@ -329,12 +329,15 @@ function showFunctions(){
 
     echo 'deletePodServiceSSH'
     echo 'createPodServiceSSH'
+
     echo 'createServerNFs'
     echo 'createVolumeNFs'
 	echo 'deleteVolumeNFs'
+
     echo 'restServerDeploy'
     echo 'restServerRemoveDeploy'
     echo 'restServerScaleTo'
+    
     echo 'preparYamls'  
     echo 'restServerSuspendAll'      
 }

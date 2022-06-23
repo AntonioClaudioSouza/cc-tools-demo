@@ -129,7 +129,9 @@ function create(){
         fi
       
         # If force=true, remove folder
+        echo " "
         echo "Aguarde..."
+        echo " "
         sudo rm -rf $pathNewOrg > /dev/null 2>&1
         if [ -d "$pathNewOrg" ]
         then
@@ -200,7 +202,10 @@ function create(){
     # Show results
     #
     tree $pathNewOrg -L 2
-
+    echo " "
+    echo " Copie os arquivos de certificados para $pathNewOrg/certs"
+    echo " Sem eles não será possível realizar o deploy!"
+    echo " "
 
     #check.....
     # Generate certs for rest-server
@@ -251,6 +256,10 @@ function remove(){
     if [ -d "$pathNewOrg" ]
     then
         while true; do
+            echo "**************************************************************************"
+            echo "       OS CERTIFICADOS DESSA ORG SERÃO REMOVIDOS DA PASTA REST-SERVER"
+            echo "  TENHA CERTEZA DA REMOÇÃO, OU, FAÇA UM BACKUP ANTES SE ASSIM DESEJAR!!!!"
+            echo "**************************************************************************"
             read -p "Tem certeza que deseja remover essa org:($org) da rest-api(SN)? " yn
             case $yn in
                 [Ss]* ) break;;
@@ -260,7 +269,7 @@ function remove(){
         done
 
         # Remove folder config org
-        rm -rf $pathNewOrg > /dev/null 2>&1
+        sudo rm -rf $pathNewOrg > /dev/null 2>&1        
         if [ -d "$pathNewOrg" ]
         then
             echo 'falhou ao tentar remover os arquivos de configuracao, nada a fazer'

@@ -82,7 +82,42 @@ function restServerDeploy(){
         echo 'label aplicação para org nao localizado, operação abortada!'       
         return 
     fi
+    
 
+    #
+    # Check is certs for deploy 
+    #
+    pathCerts=$PATH_TARGET_CONFIG_FILES_ORG"/$org/certs"    
+    totCert=$(ls $pathCerts | grep ".cert" | wc -l)
+    totKey=$(ls $pathCerts | grep ".key" | wc -l)
+    totCrt=$(ls $pathCerts | grep ".crt" | wc -l)
+    totPem=$(ls $pathCerts | grep ".pem" | wc -l)
+    
+    if [ "$totCert" == 0 ]
+    then
+        echo "Arquivo certificado do tipo:'cert', nao localizado. Deploy cancelado."
+        exit
+    fi
+
+    if [ "$totKey" == 0 ]
+    then
+        echo "Arquivo certificado do tipo:'key', nao localizado. Deploy cancelado."
+        exit
+    fi
+
+    if [ "$totCrt" == 0 ]
+    then
+        echo "Arquivo certificado do tipo:'crt', nao localizado. Deploy cancelado."
+        exit
+    fi
+
+    if [ "$totPem" == 0 ]
+    then
+        echo "Arquivo certificado do tipo:'pem', nao localizado. Deploy cancelado."
+        exit
+    fi
+
+     
     #
     # Create namespace and set app root permissions
     #
@@ -303,10 +338,10 @@ function parse_yaml() {
 #
 function showFunctions(){
 
-    echo 'restServerDeploy'
-    echo 'restServerRemoveDeploy'
-    echo 'restServerScaleTo'        
-    echo 'restServerSuspendAll'      
+    echo 'deploy'
+    echo 'removeDeploy'
+    echo 'scaleTo'        
+    echo 'suspendAll'      
 }
 
 
@@ -315,20 +350,20 @@ function showFunctions(){
 # * ------------------------
 case $1 in
   
-    restServerDeploy)
+    deploy)
 		restServerDeploy $2
         exit 1
 		;;
-    restServerRemoveDeploy)
+    removeDeploy)
 		restServerRemoveDeploy $2
         exit 1
 		;;
-    restServerScaleTo)
+    scaleTo)
 		restServerScaleTo $2 $3
         exit 1
 		;;
 
-    restServerSuspendAll)
+    suspendAll)
 		restServerSuspendAll $2
         exit 1
 		;;

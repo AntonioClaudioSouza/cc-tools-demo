@@ -1,1 +1,3 @@
 ./org-manager.sh create org=org1 force=true chaincode=cc-tools-go-sale
+./org-manager.sh create org=org2 force=true chaincode=cc-tools-go-sale
+./org-manager.sh create org=org3 force=true chaincode=cc-tools-go-sale

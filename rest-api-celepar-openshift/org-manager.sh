@@ -333,6 +333,16 @@ function showFunctions(){
     echo "  Exemplo: ./org-manager.sh remove org=org1"
     echo " "
     echo " "
+    echo "> list"
+    echo "  Mostra as orgs configuradas para deploy"
+    echo "  Parametros:"
+    echo "    nenhum irá listar todas"
+    echo "    nome da org, mostrar a listagem os arqs de config"
+    echo " "
+    echo "  Exemplo: ./org-manager.sh list"
+    echo "  Exemplo: ./org-manager.sh list org=org1"
+    echo " "
+    echo " "
 }
 
 # * ------------------------
